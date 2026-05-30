@@ -11,6 +11,7 @@
   <meta name="description" content="Bon de commande VTC – Arrêté 6 août 2025"/>
   <link rel="manifest" href="manifest.json"/>
   <title>VTC Order</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -25,6 +26,104 @@
 <div id="root"></div>
 <script type="text/babel">
 const{useState,useEffect,useRef}=React;
+
+// ── CLÉS VALIDES ─────────────────────────────────────────────────────
+// Ajoute ou retire des clés ici. Chaque clé = 1 utilisateur autorisé.
+const VALID_KEYS = [
+  "VTC-2026-ALPHA",
+  "VTC-2026-BRAVO",
+  "VTC-2026-CHARLIE",
+  "VTC-2026-DELTA",
+  "VTC-2026-ECHO",
+];
+// ─────────────────────────────────────────────────────────────────────
+
+const KEY_STORAGE = "vtc_activation_key";
+
+function ActivationScreen({ onActivated }) {
+  const [key, setKey] = useState("");
+  const [error, setError] = useState("");
+  const [ok, setOk] = useState(false);
+
+  function activate() {
+    const trimmed = key.trim().toUpperCase();
+    if (VALID_KEYS.includes(trimmed)) {
+      localStorage.setItem(KEY_STORAGE, trimmed);
+      setOk(true);
+      setTimeout(() => onActivated(), 1200);
+    } else {
+      setError("Clé invalide. Contacte l'administrateur.");
+    }
+  }
+
+  return (
+    <div style={{
+      minHeight:"100dvh", background:"#080b12", display:"flex",
+      flexDirection:"column", alignItems:"center", justifyContent:"center",
+      padding:"32px 24px", fontFamily:"'Outfit',sans-serif"
+    }}>
+      <div style={{
+        width:"42px", height:"42px", borderRadius:"12px",
+        background:"linear-gradient(135deg,#4f80ff,#2fd9a8)",
+        display:"flex", alignItems:"center", justifyContent:"center",
+        fontSize:"22px", marginBottom:"20px"
+      }}>🚗</div>
+
+      <div style={{fontSize:"24px", fontWeight:"800", color:"#e2e8f8", marginBottom:"6px", letterSpacing:"-0.5px"}}>
+        VTC Order
+      </div>
+      <div style={{fontSize:"13px", color:"#6b7899", marginBottom:"36px", textAlign:"center", lineHeight:"1.5"}}>
+        Application réservée aux utilisateurs autorisés.<br/>Entre ta clé d'activation pour continuer.
+      </div>
+
+      <div style={{width:"100%", maxWidth:"340px"}}>
+        <input
+          type="text"
+          value={key}
+          onChange={e => { setKey(e.target.value.toUpperCase()); setError(""); }}
+          placeholder="VTC-2026-XXXXX"
+          style={{
+            width:"100%", background:"#0f1320", border:"1px solid #1e2640",
+            borderRadius:"12px", color:"#e2e8f8", fontFamily:"'JetBrains Mono',monospace",
+            fontSize:"16px", padding:"14px 16px", outline:"none",
+            textAlign:"center", letterSpacing:"2px", marginBottom:"12px"
+          }}
+          onKeyDown={e => e.key === "Enter" && activate()}
+        />
+
+        {error && (
+          <div style={{
+            background:"rgba(255,80,80,0.1)", border:"1px solid rgba(255,80,80,0.3)",
+            borderRadius:"10px", padding:"10px 14px", fontSize:"13px",
+            color:"#ff6b6b", marginBottom:"12px", textAlign:"center"
+          }}>{error}</div>
+        )}
+
+        {ok && (
+          <div style={{
+            background:"rgba(47,217,168,0.1)", border:"1px solid rgba(47,217,168,0.3)",
+            borderRadius:"10px", padding:"10px 14px", fontSize:"13px",
+            color:"#2fd9a8", marginBottom:"12px", textAlign:"center"
+          }}>✅ Clé valide ! Ouverture...</div>
+        )}
+
+        <button onClick={activate} style={{
+          width:"100%", padding:"16px", border:"none", borderRadius:"12px",
+          fontFamily:"'Outfit',sans-serif", fontSize:"16px", fontWeight:"700",
+          background:"linear-gradient(135deg,#4f80ff,#2fd9a8)", color:"#080b12",
+          cursor:"pointer"
+        }}>
+          🔓 Activer
+        </button>
+
+        <div style={{marginTop:"24px", fontSize:"12px", color:"#6b7899", textAlign:"center", lineHeight:"1.6"}}>
+          Tu n'as pas de clé ? Contacte-nous pour obtenir un accès.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function pad(n){return String(n).padStart(2,"0")}
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
@@ -117,7 +216,16 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
 `;
 
 function App(){
+  const[activated,setActivated]=useState(false);
   const[screen,setScreen]=useState("home");
+
+  useEffect(()=>{
+    const k=localStorage.getItem(KEY_STORAGE);
+    if(k&&VALID_KEYS.includes(k)) setActivated(true);
+  },[]);
+
+  if(!activated) return <ActivationScreen onActivated={()=>setActivated(true)}/>;
+
   const[profile,setProfile]=useState({nom:"",chauffeur:"",societe:"",adresse:"",numVTC:"",numIdent:""});
   const[saved,setSaved]=useState(false);
   const[dateRes,setDateRes]=useState("");
@@ -171,6 +279,91 @@ function App(){
       (profile.adresse?`Adresse : ${profile.adresse}\n`:"")+
       `N° registre VTC : ${profile.numVTC||"—"}\n`+
       (profile.numIdent?`SIRET : ${profile.numIdent}\n`:"");
+  }
+
+  function genererPDF(){
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    const W=210, pad=20;
+    let y=20;
+
+    // Fond header
+    doc.setFillColor(8,11,18);
+    doc.rect(0,0,W,40,"F");
+
+    // Titre
+    doc.setTextColor(79,128,255);
+    doc.setFontSize(20);doc.setFont("helvetica","bold");
+    doc.text("BON DE COMMANDE VTC",W/2,18,{align:"center"});
+    doc.setTextColor(107,120,153);
+    doc.setFontSize(9);doc.setFont("helvetica","normal");
+    doc.text("Conformément à l'arrêté du 6 août 2025",W/2,26,{align:"center"});
+    y=48;
+
+    // Ligne séparatrice
+    doc.setDrawColor(30,38,64);doc.setLineWidth(0.5);
+    doc.line(pad,y,W-pad,y);y+=10;
+
+    // Section Course
+    doc.setFillColor(15,19,32);
+    doc.roundedRect(pad,y,W-pad*2,8,2,2,"F");
+    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
+    doc.text("COURSE",pad+4,y+5.5);
+    y+=14;
+
+    const rows=[
+      ["Date et heure de réservation", formatBonDate(dateRes,heureRes)],
+      ["Heure de prise en charge", pec?formatNow(pec):"—"],
+      ["Nom du passager", passager],
+      ["Lieu de prise en charge", adresseD],
+      ["Destination", adresseA],
+    ];
+
+    rows.forEach(([k,v])=>{
+      doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
+      doc.text(k,pad,y);
+      doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
+      const lines=doc.splitTextToSize(v||"—",90);
+      doc.text(lines,W/2,y);
+      y+=lines.length>1?lines.length*6:8;
+    });
+
+    y+=4;
+    doc.setDrawColor(230,230,230);doc.line(pad,y,W-pad,y);y+=10;
+
+    // Section Exploitant
+    doc.setFillColor(15,19,32);
+    doc.roundedRect(pad,y,W-pad*2,8,2,2,"F");
+    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
+    doc.text("EXPLOITANT",pad+4,y+5.5);
+    y+=14;
+
+    const rows2=[
+      ["Nom du chauffeur", profile.chauffeur||profile.nom||"—"],
+      profile.societe&&["Société", profile.societe],
+      profile.adresse&&["Adresse", profile.adresse],
+      ["N° registre VTC", profile.numVTC||"—"],
+      profile.numIdent&&["SIRET", profile.numIdent],
+    ].filter(Boolean);
+
+    rows2.forEach(([k,v])=>{
+      doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
+      doc.text(k,pad,y);
+      doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
+      const lines=doc.splitTextToSize(v||"—",90);
+      doc.text(lines,W/2,y);
+      y+=lines.length>1?lines.length*6:8;
+    });
+
+    // Footer
+    doc.setFillColor(8,11,18);
+    doc.rect(0,277,W,20,"F");
+    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","normal");
+    doc.text("VTC Order — Généré le "+formatNow(new Date()),W/2,287,{align:"center"});
+
+    // Téléchargement
+    const filename=`bon-vtc-${pad(new Date().getDate())}${pad(new Date().getMonth()+1)}${new Date().getFullYear()}.pdf`;
+    doc.save(filename);
   }
 
   async function partager(){
@@ -248,7 +441,7 @@ function App(){
               <button className="b-back" onClick={()=>setScreen("form")}>✏️ Modifier</button>
               <button className="b-new" onClick={openForm}>➕ Nouveau</button>
               <button className="b-share" onClick={partager}>📤 Partager</button>
-              <button className="b-share" style={{background:"linear-gradient(135deg,#ff6b35,#f7c59f)",color:"#080b12"}} onClick={()=>window.print()}>🖨️ PDF</button>
+              <button className="b-share" style={{background:"linear-gradient(135deg,#ff6b35,#ffc843)",color:"#080b12"}} onClick={genererPDF}>📄 PDF</button>
             </div>
             <div className="bon-wrap">
               <div className="bon-paper">
