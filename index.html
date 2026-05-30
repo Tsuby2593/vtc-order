@@ -148,67 +148,70 @@ function App(){
   }
 
   function genererPDF(){
-    const{jsPDF}=window.jspdf;
-    const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-    const W=210,pad=20;
-    let y=20;
-    doc.setFillColor(8,11,18);
-    doc.rect(0,0,W,40,"F");
-    doc.setTextColor(79,128,255);
-    doc.setFontSize(20);doc.setFont("helvetica","bold");
-    doc.text("BON DE COMMANDE VTC",W/2,18,{align:"center"});
-    doc.setTextColor(107,120,153);
-    doc.setFontSize(9);doc.setFont("helvetica","normal");
-    doc.text("Conformément à l'arrêté du 6 août 2025",W/2,26,{align:"center"});
-    y=48;
-    doc.setDrawColor(30,38,64);doc.setLineWidth(0.5);
-    doc.line(pad,y,W-pad,y);y+=10;
-    doc.setFillColor(15,19,32);
-    doc.roundedRect(pad,y,W-pad*2,8,2,2,"F");
-    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
-    doc.text("COURSE",pad+4,y+5.5);y+=14;
-    const rows=[
-      ["Date et heure de réservation",formatBonDate(dateRes,heureRes)],
-      ["Heure de prise en charge",pec?formatNow(pec):"—"],
-      ["Nom du passager",passager],
-      ["Lieu de prise en charge",adresseD],
-      ["Destination",adresseA],
-    ];
-    rows.forEach(([k,v])=>{
-      doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
-      doc.text(k,pad,y);
-      doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
-      const lines=doc.splitTextToSize(v||"—",90);
-      doc.text(lines,W/2,y);
-      y+=lines.length>1?lines.length*6:8;
-    });
-    y+=4;
-    doc.setDrawColor(230,230,230);doc.line(pad,y,W-pad,y);y+=10;
-    doc.setFillColor(15,19,32);
-    doc.roundedRect(pad,y,W-pad*2,8,2,2,"F");
-    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
-    doc.text("EXPLOITANT",pad+4,y+5.5);y+=14;
-    const rows2=[
-      ["Nom du chauffeur",profile.chauffeur||profile.nom||"—"],
-      profile.societe&&["Société",profile.societe],
-      profile.adresse&&["Adresse",profile.adresse],
-      ["N° registre VTC",profile.numVTC||"—"],
-      profile.numIdent&&["SIRET",profile.numIdent],
-    ].filter(Boolean);
-    rows2.forEach(([k,v])=>{
-      doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
-      doc.text(k,pad,y);
-      doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
-      const lines=doc.splitTextToSize(v||"—",90);
-      doc.text(lines,W/2,y);
-      y+=lines.length>1?lines.length*6:8;
-    });
-    doc.setFillColor(8,11,18);
-    doc.rect(0,277,W,20,"F");
-    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","normal");
-    doc.text("VTC Order — Généré le "+formatNow(new Date()),W/2,287,{align:"center"});
-    const filename=`bon-vtc-${pad(new Date().getDate())}${pad(new Date().getMonth()+1)}${new Date().getFullYear()}.pdf`;
-    doc.save(filename);
+    try{
+      const{jsPDF}=window.jspdf;
+      if(!jsPDF){alert("PDF non disponible, utilise le bouton Partager.");return;}
+      const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+      const W=210,mg=20;
+      let y=20;
+      doc.setFillColor(8,11,18);
+      doc.rect(0,0,W,40,"F");
+      doc.setTextColor(79,128,255);
+      doc.setFontSize(20);doc.setFont("helvetica","bold");
+      doc.text("BON DE COMMANDE VTC",W/2,18,{align:"center"});
+      doc.setTextColor(107,120,153);
+      doc.setFontSize(9);doc.setFont("helvetica","normal");
+      doc.text("Conformement a l'arrete du 6 aout 2025",W/2,26,{align:"center"});
+      y=48;
+      doc.setDrawColor(30,38,64);doc.setLineWidth(0.5);
+      doc.line(mg,y,W-mg,y);y+=10;
+      doc.setFillColor(15,19,32);
+      doc.roundedRect(mg,y,W-mg*2,8,2,2,"F");
+      doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
+      doc.text("COURSE",mg+4,y+5.5);y+=14;
+      [
+        ["Date et heure de reservation",formatBonDate(dateRes,heureRes)],
+        ["Heure de prise en charge",pec?formatNow(pec):"—"],
+        ["Nom du passager",passager],
+        ["Lieu de prise en charge",adresseD],
+        ["Destination",adresseA],
+      ].forEach(([k,v])=>{
+        doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
+        doc.text(k,mg,y);
+        doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
+        const lines=doc.splitTextToSize(v||"—",90);
+        doc.text(lines,W/2,y);
+        y+=lines.length>1?lines.length*6:8;
+      });
+      y+=4;doc.setDrawColor(230,230,230);doc.line(mg,y,W-mg,y);y+=10;
+      doc.setFillColor(15,19,32);
+      doc.roundedRect(mg,y,W-mg*2,8,2,2,"F");
+      doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
+      doc.text("EXPLOITANT",mg+4,y+5.5);y+=14;
+      [
+        ["Nom du chauffeur",profile.chauffeur||profile.nom||"—"],
+        profile.societe?["Societe",profile.societe]:null,
+        profile.adresse?["Adresse",profile.adresse]:null,
+        ["N° registre VTC",profile.numVTC||"—"],
+        profile.numIdent?["SIRET",profile.numIdent]:null,
+      ].filter(Boolean).forEach(([k,v])=>{
+        doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
+        doc.text(k,mg,y);
+        doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
+        const lines=doc.splitTextToSize(v||"—",90);
+        doc.text(lines,W/2,y);
+        y+=lines.length>1?lines.length*6:8;
+      });
+      doc.setFillColor(8,11,18);
+      doc.rect(0,277,W,20,"F");
+      doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","normal");
+      doc.text("VTC Order — Genere le "+formatNow(new Date()),W/2,287,{align:"center"});
+      const fn=`bon-vtc-${pad(new Date().getDate())}${pad(new Date().getMonth()+1)}${new Date().getFullYear()}.pdf`;
+      doc.save(fn);
+    }catch(e){
+      console.error(e);
+      alert("Erreur PDF : "+e.message+"\nUtilise le bouton Partager.");
+    }
   }
 
   async function partager(){
