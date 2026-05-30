@@ -215,13 +215,8 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
 .saved-ok{text-align:center;color:var(--grn);font-size:14px;font-weight:600;margin-top:10px}
 `;
 
-function App(){
-  const k=localStorage.getItem(KEY_STORAGE);
-  const[activated,setActivated]=useState(k&&VALID_KEYS.includes(k)?true:false);
+  function App(){
   const[screen,setScreen]=useState("home");
-
-  if(!activated) return <ActivationScreen onActivated={()=>setActivated(true)}/>;
-  if(!activated) return <ActivationScreen onActivated={()=>setActivated(true)}/>;
 
   const[profile,setProfile]=useState({nom:"",chauffeur:"",societe:"",adresse:"",numVTC:"",numIdent:""});
   const[saved,setSaved]=useState(false);
