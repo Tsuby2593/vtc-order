@@ -216,14 +216,11 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
 `;
 
 function App(){
-  const[activated,setActivated]=useState(false);
+  const k=localStorage.getItem(KEY_STORAGE);
+  const[activated,setActivated]=useState(k&&VALID_KEYS.includes(k)?true:false);
   const[screen,setScreen]=useState("home");
 
-  useEffect(()=>{
-    const k=localStorage.getItem(KEY_STORAGE);
-    if(k&&VALID_KEYS.includes(k)) setActivated(true);
-  },[]);
-
+  if(!activated) return <ActivationScreen onActivated={()=>setActivated(true)}/>;
   if(!activated) return <ActivationScreen onActivated={()=>setActivated(true)}/>;
 
   const[profile,setProfile]=useState({nom:"",chauffeur:"",societe:"",adresse:"",numVTC:"",numIdent:""});
