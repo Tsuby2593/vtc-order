@@ -1,13 +1,26 @@
 {
-  "background_color": "#080b12",
+  "name": "VTC Order",
+  "short_name": "VTC Order",
   "description": "Bon de commande VTC – Arrêté 6 août 2025",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "VTC Commande",
-  "orientation": "portrait",
+  "start_url": "/",
   "scope": "/",
-  "short_name": "VTC Commande",
-  "start_url": "https://flat-night-26b6.youssouf-93700.workers.dev/",
+  "display": "standalone",
+  "background_color": "#080b12",
   "theme_color": "#080b12",
-  "id": "VTCC"
+  "orientation": "portrait",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
