@@ -32,6 +32,21 @@ function formatBonDate(s,t){if(!s||!t)return"—";const[y,m,d]=s.split("-");retu
 function formatNow(d){return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`}
 
 const CSS=`
+@media print {
+  header, .bon-bar { display: none !important; }
+  body, html { background: white !important; }
+  .app { max-width: 100% !important; }
+  .bon-wrap { padding: 0 !important; }
+  .bon-paper {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 20px !important;
+    font-size: 14px !important;
+  }
+  .bp-title { font-size: 20px !important; }
+  .bp-row { margin-bottom: 12px !important; }
+}
+
 :root{--bg:#080b12;--s1:#0f1320;--s2:#161c2e;--bd:#1e2640;--acc:#4f80ff;--grn:#2fd9a8;--txt:#e2e8f8;--txt2:#6b7899;--ylw:#ffc843}
 body{font-family:'Outfit',sans-serif;color:var(--txt);background:var(--bg);-webkit-font-smoothing:antialiased}
 .app{max-width:430px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
@@ -233,6 +248,7 @@ function App(){
               <button className="b-back" onClick={()=>setScreen("form")}>✏️ Modifier</button>
               <button className="b-new" onClick={openForm}>➕ Nouveau</button>
               <button className="b-share" onClick={partager}>📤 Partager</button>
+              <button className="b-share" style={{background:"linear-gradient(135deg,#ff6b35,#f7c59f)",color:"#080b12"}} onClick={()=>window.print()}>🖨️ PDF</button>
             </div>
             <div className="bon-wrap">
               <div className="bon-paper">
