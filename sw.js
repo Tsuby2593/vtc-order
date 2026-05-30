@@ -1,4 +1,4 @@
-const CACHE = "vtc-v1";
+const CACHE = "vtc-v3";
 const ASSETS = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", e => {
