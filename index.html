@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#080b12"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="VTC Order"/>
+  <meta name="description" content="Bon de commande VTC – Arrêté 6 août 2025"/>
+  <link rel="manifest" href="manifest.json"/>
+  <title>VTC Order</title>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:#080b12;overscroll-behavior:none}
+    #root{height:100%}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useRef}=React;
+
+function pad(n){return String(n).padStart(2,"0")}
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function formatBonDate(s,t){if(!s||!t)return"—";const[y,m,d]=s.split("-");return `${d}/${m}/${y} ${t}:00`}
+function formatNow(d){return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`}
+
+const CSS=`
+:root{--bg:#080b12;--s1:#0f1320;--s2:#161c2e;--bd:#1e2640;--acc:#4f80ff;--grn:#2fd9a8;--txt:#e2e8f8;--txt2:#6b7899;--ylw:#ffc843}
+body{font-family:'Outfit',sans-serif;color:var(--txt);background:var(--bg);-webkit-font-smoothing:antialiased}
+.app{max-width:430px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--acc),var(--grn));display:flex;align-items:center;justify-content:center;font-size:19px}
+.brand-name{font-size:17px;font-weight:700;letter-spacing:-0.4px}
+.brand-legal{font-size:10px;color:var(--txt2);font-family:'JetBrains Mono',monospace;margin-top:1px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;color:var(--txt2)}
+.chip.ok{color:var(--grn);border-color:rgba(47,217,168,0.3);background:rgba(47,217,168,0.07)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.screen{flex:1;padding:24px 18px 40px}
+.home-top{text-align:center;padding:36px 0 24px}
+.home-emoji{font-size:52px;margin-bottom:14px}
+.home-title{font-size:28px;font-weight:800;line-height:1.15;letter-spacing:-0.8px;margin-bottom:10px}
+.home-title span{color:var(--acc)}
+.status-card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.sdot{width:10px;height:10px;border-radius:50%;background:var(--txt2);flex-shrink:0}
+.sdot.ok{background:var(--grn)}
+.slbl{font-size:14px;color:var(--txt2)}
+.slbl strong{color:var(--txt);font-weight:600}
+.btn-main{width:100%;padding:20px;border:none;border-radius:16px;font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--acc),var(--grn));color:#080b12;cursor:pointer;box-shadow:0 8px 32px rgba(79,128,255,0.3);transition:transform 0.15s}
+.btn-main:active{transform:scale(0.97)}
+.warn{margin-top:14px;background:rgba(255,200,67,0.08);border:1px solid rgba(255,200,67,0.2);border-radius:11px;padding:12px 14px;font-size:13px;color:var(--ylw);line-height:1.55}
+.fh{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:20px}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:18px;margin-bottom:12px}
+.ct{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--txt2);margin-bottom:16px}
+.tpick{display:flex;align-items:center;justify-content:center;gap:6px}
+.tbox{background:var(--bg);border:2px solid var(--bd);border-radius:14px;display:flex;flex-direction:column;align-items:center;overflow:hidden;transition:border-color 0.2s}
+.tbox:focus-within{border-color:var(--acc)}
+.tbox label{font-size:10px;color:var(--txt2);font-weight:600;letter-spacing:1px;padding-top:10px}
+.tbox input{border:none;background:transparent;font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:500;color:var(--txt);text-align:center;width:100px;padding:4px 0 12px;outline:none;caret-color:var(--acc)}
+.tbox input::placeholder{color:var(--bd)}
+.tsep{font-family:'JetBrains Mono',monospace;font-size:36px;color:var(--txt2);padding-bottom:4px;font-weight:300}
+.drow{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.drow label{font-size:12px;color:var(--txt2)}
+.drow input{background:var(--bg);border:1px solid var(--bd);border-radius:9px;color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:13px;padding:7px 10px;outline:none}
+.drow input:focus{border-color:var(--acc)}
+.hint{margin-top:12px;background:rgba(79,128,255,0.07);border:1px solid rgba(79,128,255,0.2);border-radius:10px;padding:10px 13px;font-size:12px;color:var(--acc);line-height:1.55}
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12px;color:var(--txt2);font-weight:500;margin-bottom:6px}
+.field input,.field textarea{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:11px;color:var(--txt);font-family:'Outfit',sans-serif;font-size:15px;padding:12px 14px;outline:none;transition:border-color 0.2s}
+.field input:focus,.field textarea:focus{border-color:var(--acc)}
+.field textarea{resize:none;height:64px;line-height:1.5}
+.btn-gen{width:100%;padding:18px;border:none;border-radius:15px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;background:linear-gradient(135deg,var(--acc),var(--grn));color:#080b12;cursor:pointer;transition:transform 0.15s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-gen:active{transform:scale(0.97)}
+.btn-ghost{width:100%;padding:13px;border:1px solid var(--bd);border-radius:13px;background:none;color:var(--txt2);font-family:'Outfit',sans-serif;font-size:14px;cursor:pointer}
+.bon-bar{display:flex;gap:8px;padding:12px 18px;background:var(--s1);border-bottom:1px solid var(--bd);position:sticky;top:57px;z-index:10}
+.bon-bar button{flex:1;border:none;border-radius:10px;padding:12px 8px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+.b-back{background:var(--s2);color:var(--txt2);border:1px solid var(--bd)!important}
+.b-new{background:var(--s2);color:var(--txt);border:1px solid var(--bd)!important}
+.b-share{background:linear-gradient(135deg,var(--acc),var(--grn));color:#080b12}
+.bon-wrap{padding:16px 18px 40px}
+.bon-paper{background:#fff;color:#111;border-radius:16px;padding:28px 24px;box-shadow:0 24px 64px rgba(0,0,0,0.6);font-family:'Outfit',sans-serif;font-size:13px;line-height:1.65}
+.bp-title{font-size:18px;font-weight:800;text-align:center;color:#111;margin-bottom:4px;letter-spacing:-0.3px}
+.bp-sub{font-size:11px;color:#666;text-align:center;line-height:1.5;margin-bottom:20px}
+.bp-hr{border:none;border-top:1px solid #e8e8e8;margin:16px 0}
+.bp-sec{font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;margin-bottom:12px}
+.bp-row{display:grid;grid-template-columns:44% 56%;gap:5px 10px;margin-bottom:10px;align-items:start}
+.bp-k{color:#666;font-size:12px;line-height:1.4}
+.bp-v{font-size:13px;font-weight:600;color:#111;line-height:1.4;word-break:break-word}
+.bp-v.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+.ph{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px}
+.ps{font-size:13px;color:var(--txt2);margin-bottom:20px}
+.btn-save{width:100%;padding:16px;border:none;border-radius:14px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;background:var(--grn);color:#080b12;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.saved-ok{text-align:center;color:var(--grn);font-size:14px;font-weight:600;margin-top:10px}
+`;
+
+function App(){
+  const[screen,setScreen]=useState("home");
+  const[profile,setProfile]=useState({nom:"",chauffeur:"",societe:"",adresse:"",numVTC:"",numIdent:""});
+  const[saved,setSaved]=useState(false);
+  const[dateRes,setDateRes]=useState("");
+  const[heureRes,setHeureRes]=useState("");
+  const[hh,setHh]=useState("");
+  const[mm,setMm]=useState("");
+  const[passager,setPassager]=useState("");
+  const[adresseD,setAdresseD]=useState("");
+  const[adresseA,setAdresseA]=useState("");
+  const[pec,setPec]=useState(null);
+
+  useEffect(()=>{
+    try{const p=localStorage.getItem("vtc_v5");if(p)setProfile(JSON.parse(p))}catch{}
+  },[]);
+
+  function saveProfile(){
+    try{localStorage.setItem("vtc_v5",JSON.stringify(profile))}catch{}
+    setSaved(true);setTimeout(()=>{setSaved(false);setScreen("home")},1200);
+  }
+
+  function openForm(){
+    setDateRes(todayStr());setHeureRes("");setHh("");setMm("");
+    setPassager("");setAdresseD("");setAdresseA("");setPec(null);
+    setScreen("form");
+  }
+
+  function onHh(v){
+    const n=v.replace(/\D/g,"").slice(0,2);setHh(n);
+    if(n.length===2)document.getElementById("mm")?.focus();
+    setHeureRes(n.length===2&&mm.length===2?`${n}:${mm}`:"");
+  }
+  function onMm(v){
+    const n=v.replace(/\D/g,"").slice(0,2);setMm(n);
+    setHeureRes(hh.length===2&&n.length===2?`${hh}:${n}`:"");
+  }
+
+  function generer(){
+    if(!heureRes||!passager.trim()||!adresseD.trim()||!adresseA.trim()){alert("Remplis tous les champs.");return;}
+    setPec(new Date());setScreen("bon");
+  }
+
+  function getBonTexte(){
+    return `BON DE COMMANDE VTC\n(Arrêté 6 août 2025)\n\n`+
+      `Réservation : ${formatBonDate(dateRes,heureRes)}\n`+
+      `Prise en charge : ${pec?formatNow(pec):"—"}\n`+
+      `Passager : ${passager}\n`+
+      `De : ${adresseD}\n`+
+      `À : ${adresseA}\n\n`+
+      `Chauffeur : ${profile.chauffeur||profile.nom||"—"}\n`+
+      (profile.societe?`Société : ${profile.societe}\n`:"")+
+      (profile.adresse?`Adresse : ${profile.adresse}\n`:"")+
+      `N° registre VTC : ${profile.numVTC||"—"}\n`+
+      (profile.numIdent?`SIRET : ${profile.numIdent}\n`:"");
+  }
+
+  async function partager(){
+    const txt=getBonTexte();
+    try{await navigator.share({title:"Bon de commande VTC",text:txt})}
+    catch{
+      try{await navigator.clipboard.writeText(txt);alert("✅ Bon copié ! Colle-le où tu veux.");}
+      catch{alert("Partage non disponible. Fais une capture d'écran du bon.");}
+    }
+  }
+
+  const ok=profile.nom&&profile.numVTC;
+
+  return(
+    <>
+      <style>{CSS}</style>
+      <div className="app">
+
+        <header>
+          <div className="brand">
+            <div className="brand-icon">🚗</div>
+            <div>
+              <div className="brand-name">VTC Order</div>
+              <div className="brand-legal">Arrêté 6 août 2025</div>
+            </div>
+          </div>
+          <div className={`chip ${ok?"ok":""}`} onClick={()=>setScreen(screen==="profil"?"home":"profil")}>
+            <span className="dot"/>
+            {ok?profile.nom.split(" ")[0]:"Mon profil"}
+          </div>
+        </header>
+
+        {screen==="home"&&(
+          <div className="screen">
+            <div className="home-top">
+              <div className="home-emoji">🚖</div>
+              <div className="home-title">Bon de commande<br/><span>instantané</span></div>
+            </div>
+            <div className="status-card">
+              <div className={`sdot ${ok?"ok":""}`}/>
+              <div className="slbl">{ok?<>Profil actif — <strong>{profile.nom}</strong></>:<>Profil incomplet</>}</div>
+            </div>
+            <button className="btn-main" onClick={openForm}>⚡ Nouveau bon</button>
+            {!ok&&<div className="warn">⚠️ <strong>Remplis ton profil</strong> avant de générer un bon.</div>}
+          </div>
+        )}
+
+        {screen==="form"&&(
+          <div className="screen">
+            <div className="fh">Nouvelle course</div>
+            <div className="card" style={{borderColor:"rgba(79,128,255,0.3)",background:"rgba(79,128,255,0.05)"}}>
+              <div className="ct">📅 Date et heure de réservation</div>
+              <div className="tpick">
+                <div className="tbox"><label>HH</label><input id="hh" inputMode="numeric" maxLength={2} value={hh} onChange={e=>onHh(e.target.value)} placeholder="21"/></div>
+                <div className="tsep">:</div>
+                <div className="tbox"><label>MM</label><input id="mm" inputMode="numeric" maxLength={2} value={mm} onChange={e=>onMm(e.target.value)} placeholder="30"/></div>
+              </div>
+              <div className="drow"><label>Date</label><input type="date" value={dateRes} onChange={e=>setDateRes(e.target.value)}/></div>
+              <div className="hint">⏱ Heure à laquelle tu as quitté ta base. L'heure de prise en charge est capturée automatiquement à la génération.</div>
+            </div>
+            <div className="card">
+              <div className="ct">🧑 Passager & trajet</div>
+              <div className="field"><label>Nom du passager</label><input type="text" value={passager} onChange={e=>setPassager(e.target.value)} placeholder="Prénom ou nom" autoComplete="off"/></div>
+              <div className="field"><label>Lieu de prise en charge</label><textarea value={adresseD} onChange={e=>setAdresseD(e.target.value)} placeholder="Adresse de départ"/></div>
+              <div className="field"><label>Destination</label><textarea value={adresseA} onChange={e=>setAdresseA(e.target.value)} placeholder="Adresse d'arrivée"/></div>
+            </div>
+            <button className="btn-gen" onClick={generer}>📄 Générer le bon</button>
+            <button className="btn-ghost" onClick={()=>setScreen("home")}>← Retour</button>
+          </div>
+        )}
+
+        {screen==="bon"&&(
+          <>
+            <div className="bon-bar">
+              <button className="b-back" onClick={()=>setScreen("form")}>✏️ Modifier</button>
+              <button className="b-new" onClick={openForm}>➕ Nouveau</button>
+              <button className="b-share" onClick={partager}>📤 Partager</button>
+            </div>
+            <div className="bon-wrap">
+              <div className="bon-paper">
+                <div className="bp-title">Bon de commande VTC</div>
+                <div className="bp-sub">Justification de la réservation préalable<br/>conformément à l'arrêté du 6 août 2025</div>
+                <hr className="bp-hr"/>
+                <div className="bp-sec">Course</div>
+                <div className="bp-row"><span className="bp-k">Date et heure de réservation</span><span className="bp-v mono">{formatBonDate(dateRes,heureRes)}</span></div>
+                <div className="bp-row"><span className="bp-k">Heure de prise en charge</span><span className="bp-v mono">{pec?formatNow(pec):"—"}</span></div>
+                <div className="bp-row"><span className="bp-k">Nom du passager</span><span className="bp-v">{passager}</span></div>
+                <div className="bp-row"><span className="bp-k">Lieu de prise en charge</span><span className="bp-v">{adresseD}</span></div>
+                <div className="bp-row"><span className="bp-k">Destination</span><span className="bp-v">{adresseA}</span></div>
+                <hr className="bp-hr"/>
+                <div className="bp-sec">Exploitant</div>
+                <div className="bp-row"><span className="bp-k">Nom du chauffeur</span><span className="bp-v">{profile.chauffeur||profile.nom||"—"}</span></div>
+                {profile.societe&&<div className="bp-row"><span className="bp-k">Société</span><span className="bp-v">{profile.societe}</span></div>}
+                {profile.adresse&&<div className="bp-row"><span className="bp-k">Adresse</span><span className="bp-v">{profile.adresse}</span></div>}
+                <div className="bp-row"><span className="bp-k">N° registre VTC</span><span className="bp-v mono">{profile.numVTC||"—"}</span></div>
+                {profile.numIdent&&<div className="bp-row"><span className="bp-k">SIRET</span><span className="bp-v mono">{profile.numIdent}</span></div>}
+              </div>
+            </div>
+          </>
+        )}
+
+        {screen==="profil"&&(
+          <div className="screen">
+            <div className="ph">Mon profil</div>
+            <div className="ps">Sauvegardé sur ton appareil. À remplir une seule fois.</div>
+            <div className="card">
+              <div className="ct">👤 Identité</div>
+              <div className="field"><label>Nom complet (émetteur)</label><input type="text" value={profile.nom} onChange={e=>setProfile({...profile,nom:e.target.value})} placeholder="Ton nom et prénom"/></div>
+              <div className="field"><label>Nom du chauffeur (si différent)</label><input type="text" value={profile.chauffeur} onChange={e=>setProfile({...profile,chauffeur:e.target.value})} placeholder="Facultatif"/></div>
+              <div className="field"><label>Société (optionnel)</label><input type="text" value={profile.societe} onChange={e=>setProfile({...profile,societe:e.target.value})} placeholder="Auto-entrepreneur, SAS…"/></div>
+              <div className="field"><label>Adresse</label><textarea value={profile.adresse} onChange={e=>setProfile({...profile,adresse:e.target.value})} placeholder="Ton adresse complète"/></div>
+              <div className="field"><label>N° d'inscription au registre VTC ✱</label><input type="text" value={profile.numVTC} onChange={e=>setProfile({...profile,numVTC:e.target.value})} placeholder="Ex : EVTC075XXXXXXX"/></div>
+              <div className="field"><label>SIRET (optionnel)</label><input type="text" value={profile.numIdent} onChange={e=>setProfile({...profile,numIdent:e.target.value})} placeholder="14 chiffres"/></div>
+            </div>
+            <button className="btn-save" onClick={saveProfile}>💾 Sauvegarder</button>
+            {saved&&<div className="saved-ok">✅ Profil sauvegardé !</div>}
+            <button className="btn-ghost" style={{marginTop:10}} onClick={()=>setScreen("home")}>← Retour</button>
+            <button className="btn-ghost" style={{marginTop:8,color:"#ff6b7a",borderColor:"rgba(255,107,122,0.3)"}}
+              onClick={()=>{if(window.confirm("Effacer le profil ?"))setProfile({nom:"",chauffeur:"",societe:"",adresse:"",numVTC:"",numIdent:""})}}>
+              🗑 Effacer le profil
+            </button>
+          </div>
+        )}
+
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+<script>
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  }
+</script>
+</body>
+</html>
