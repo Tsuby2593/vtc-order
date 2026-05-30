@@ -27,125 +27,13 @@
 <script type="text/babel">
 const{useState,useEffect,useRef}=React;
 
-// ── CLÉS VALIDES ─────────────────────────────────────────────────────
-// Ajoute ou retire des clés ici. Chaque clé = 1 utilisateur autorisé.
-const VALID_KEYS = [
-  "VTC-2026-ALPHA",
-  "VTC-2026-BRAVO",
-  "VTC-2026-CHARLIE",
-  "VTC-2026-DELTA",
-  "VTC-2026-ECHO",
-];
-// ─────────────────────────────────────────────────────────────────────
-
-const KEY_STORAGE = "vtc_activation_key";
-
-function ActivationScreen({ onActivated }) {
-  const [key, setKey] = useState("");
-  const [error, setError] = useState("");
-  const [ok, setOk] = useState(false);
-
-  function activate() {
-    const trimmed = key.trim().toUpperCase();
-    if (VALID_KEYS.includes(trimmed)) {
-      localStorage.setItem(KEY_STORAGE, trimmed);
-      setOk(true);
-      setTimeout(() => onActivated(), 1200);
-    } else {
-      setError("Clé invalide. Contacte l'administrateur.");
-    }
-  }
-
-  return (
-    <div style={{
-      minHeight:"100dvh", background:"#080b12", display:"flex",
-      flexDirection:"column", alignItems:"center", justifyContent:"center",
-      padding:"32px 24px", fontFamily:"'Outfit',sans-serif"
-    }}>
-      <div style={{
-        width:"42px", height:"42px", borderRadius:"12px",
-        background:"linear-gradient(135deg,#4f80ff,#2fd9a8)",
-        display:"flex", alignItems:"center", justifyContent:"center",
-        fontSize:"22px", marginBottom:"20px"
-      }}>🚗</div>
-
-      <div style={{fontSize:"24px", fontWeight:"800", color:"#e2e8f8", marginBottom:"6px", letterSpacing:"-0.5px"}}>
-        VTC Order
-      </div>
-      <div style={{fontSize:"13px", color:"#6b7899", marginBottom:"36px", textAlign:"center", lineHeight:"1.5"}}>
-        Application réservée aux utilisateurs autorisés.<br/>Entre ta clé d'activation pour continuer.
-      </div>
-
-      <div style={{width:"100%", maxWidth:"340px"}}>
-        <input
-          type="text"
-          value={key}
-          onChange={e => { setKey(e.target.value.toUpperCase()); setError(""); }}
-          placeholder="VTC-2026-XXXXX"
-          style={{
-            width:"100%", background:"#0f1320", border:"1px solid #1e2640",
-            borderRadius:"12px", color:"#e2e8f8", fontFamily:"'JetBrains Mono',monospace",
-            fontSize:"16px", padding:"14px 16px", outline:"none",
-            textAlign:"center", letterSpacing:"2px", marginBottom:"12px"
-          }}
-          onKeyDown={e => e.key === "Enter" && activate()}
-        />
-
-        {error && (
-          <div style={{
-            background:"rgba(255,80,80,0.1)", border:"1px solid rgba(255,80,80,0.3)",
-            borderRadius:"10px", padding:"10px 14px", fontSize:"13px",
-            color:"#ff6b6b", marginBottom:"12px", textAlign:"center"
-          }}>{error}</div>
-        )}
-
-        {ok && (
-          <div style={{
-            background:"rgba(47,217,168,0.1)", border:"1px solid rgba(47,217,168,0.3)",
-            borderRadius:"10px", padding:"10px 14px", fontSize:"13px",
-            color:"#2fd9a8", marginBottom:"12px", textAlign:"center"
-          }}>✅ Clé valide ! Ouverture...</div>
-        )}
-
-        <button onClick={activate} style={{
-          width:"100%", padding:"16px", border:"none", borderRadius:"12px",
-          fontFamily:"'Outfit',sans-serif", fontSize:"16px", fontWeight:"700",
-          background:"linear-gradient(135deg,#4f80ff,#2fd9a8)", color:"#080b12",
-          cursor:"pointer"
-        }}>
-          🔓 Activer
-        </button>
-
-        <div style={{marginTop:"24px", fontSize:"12px", color:"#6b7899", textAlign:"center", lineHeight:"1.6"}}>
-          Tu n'as pas de clé ? Contacte-nous pour obtenir un accès.
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
 function pad(n){return String(n).padStart(2,"0")}
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
 function formatBonDate(s,t){if(!s||!t)return"—";const[y,m,d]=s.split("-");return `${d}/${m}/${y} ${t}:00`}
 function formatNow(d){return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`}
 
 const CSS=`
-@media print {
-  header, .bon-bar { display: none !important; }
-  body, html { background: white !important; }
-  .app { max-width: 100% !important; }
-  .bon-wrap { padding: 0 !important; }
-  .bon-paper {
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    padding: 20px !important;
-    font-size: 14px !important;
-  }
-  .bp-title { font-size: 20px !important; }
-  .bp-row { margin-bottom: 12px !important; }
-}
-
+@media print{header,.bon-bar{display:none!important}body,html{background:white!important}.app{max-width:100%!important}.bon-wrap{padding:0!important}.bon-paper{border-radius:0!important;box-shadow:none!important;padding:20px!important;font-size:14px!important}.bp-title{font-size:20px!important}.bp-row{margin-bottom:12px!important}}
 :root{--bg:#080b12;--s1:#0f1320;--s2:#161c2e;--bd:#1e2640;--acc:#4f80ff;--grn:#2fd9a8;--txt:#e2e8f8;--txt2:#6b7899;--ylw:#ffc843}
 body{font-family:'Outfit',sans-serif;color:var(--txt);background:var(--bg);-webkit-font-smoothing:antialiased}
 .app{max-width:430px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
@@ -194,11 +82,12 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
 .btn-gen{width:100%;padding:18px;border:none;border-radius:15px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;background:linear-gradient(135deg,var(--acc),var(--grn));color:#080b12;cursor:pointer;transition:transform 0.15s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-gen:active{transform:scale(0.97)}
 .btn-ghost{width:100%;padding:13px;border:1px solid var(--bd);border-radius:13px;background:none;color:var(--txt2);font-family:'Outfit',sans-serif;font-size:14px;cursor:pointer}
-.bon-bar{display:flex;gap:8px;padding:12px 18px;background:var(--s1);border-bottom:1px solid var(--bd);position:sticky;top:57px;z-index:10}
-.bon-bar button{flex:1;border:none;border-radius:10px;padding:12px 8px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+.bon-bar{display:flex;gap:6px;padding:10px 14px;background:var(--s1);border-bottom:1px solid var(--bd);position:sticky;top:57px;z-index:10}
+.bon-bar button{flex:1;border:none;border-radius:10px;padding:11px 6px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
 .b-back{background:var(--s2);color:var(--txt2);border:1px solid var(--bd)!important}
 .b-new{background:var(--s2);color:var(--txt);border:1px solid var(--bd)!important}
 .b-share{background:linear-gradient(135deg,var(--acc),var(--grn));color:#080b12}
+.b-pdf{background:linear-gradient(135deg,#ff6b35,#ffc843);color:#080b12}
 .bon-wrap{padding:16px 18px 40px}
 .bon-paper{background:#fff;color:#111;border-radius:16px;padding:28px 24px;box-shadow:0 24px 64px rgba(0,0,0,0.6);font-family:'Outfit',sans-serif;font-size:13px;line-height:1.65}
 .bp-title{font-size:18px;font-weight:800;text-align:center;color:#111;margin-bottom:4px;letter-spacing:-0.3px}
@@ -215,9 +104,8 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
 .saved-ok{text-align:center;color:var(--grn);font-size:14px;font-weight:600;margin-top:10px}
 `;
 
-  function App(){
+function App(){
   const[screen,setScreen]=useState("home");
-
   const[profile,setProfile]=useState({nom:"",chauffeur:"",societe:"",adresse:"",numVTC:"",numIdent:""});
   const[saved,setSaved]=useState(false);
   const[dateRes,setDateRes]=useState("");
@@ -259,8 +147,72 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
     setPec(new Date());setScreen("bon");
   }
 
-  function getBonTexte(){
-    return `BON DE COMMANDE VTC\n(Arrêté 6 août 2025)\n\n`+
+  function genererPDF(){
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    const W=210,pad=20;
+    let y=20;
+    doc.setFillColor(8,11,18);
+    doc.rect(0,0,W,40,"F");
+    doc.setTextColor(79,128,255);
+    doc.setFontSize(20);doc.setFont("helvetica","bold");
+    doc.text("BON DE COMMANDE VTC",W/2,18,{align:"center"});
+    doc.setTextColor(107,120,153);
+    doc.setFontSize(9);doc.setFont("helvetica","normal");
+    doc.text("Conformément à l'arrêté du 6 août 2025",W/2,26,{align:"center"});
+    y=48;
+    doc.setDrawColor(30,38,64);doc.setLineWidth(0.5);
+    doc.line(pad,y,W-pad,y);y+=10;
+    doc.setFillColor(15,19,32);
+    doc.roundedRect(pad,y,W-pad*2,8,2,2,"F");
+    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
+    doc.text("COURSE",pad+4,y+5.5);y+=14;
+    const rows=[
+      ["Date et heure de réservation",formatBonDate(dateRes,heureRes)],
+      ["Heure de prise en charge",pec?formatNow(pec):"—"],
+      ["Nom du passager",passager],
+      ["Lieu de prise en charge",adresseD],
+      ["Destination",adresseA],
+    ];
+    rows.forEach(([k,v])=>{
+      doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
+      doc.text(k,pad,y);
+      doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
+      const lines=doc.splitTextToSize(v||"—",90);
+      doc.text(lines,W/2,y);
+      y+=lines.length>1?lines.length*6:8;
+    });
+    y+=4;
+    doc.setDrawColor(230,230,230);doc.line(pad,y,W-pad,y);y+=10;
+    doc.setFillColor(15,19,32);
+    doc.roundedRect(pad,y,W-pad*2,8,2,2,"F");
+    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
+    doc.text("EXPLOITANT",pad+4,y+5.5);y+=14;
+    const rows2=[
+      ["Nom du chauffeur",profile.chauffeur||profile.nom||"—"],
+      profile.societe&&["Société",profile.societe],
+      profile.adresse&&["Adresse",profile.adresse],
+      ["N° registre VTC",profile.numVTC||"—"],
+      profile.numIdent&&["SIRET",profile.numIdent],
+    ].filter(Boolean);
+    rows2.forEach(([k,v])=>{
+      doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
+      doc.text(k,pad,y);
+      doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
+      const lines=doc.splitTextToSize(v||"—",90);
+      doc.text(lines,W/2,y);
+      y+=lines.length>1?lines.length*6:8;
+    });
+    doc.setFillColor(8,11,18);
+    doc.rect(0,277,W,20,"F");
+    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","normal");
+    doc.text("VTC Order — Généré le "+formatNow(new Date()),W/2,287,{align:"center"});
+    const filename=`bon-vtc-${pad(new Date().getDate())}${pad(new Date().getMonth()+1)}${new Date().getFullYear()}.pdf`;
+    doc.save(filename);
+  }
+
+  async function partager(){
+    const txt=`BON DE COMMANDE VTC\n(Arrêté 6 août 2025)\n\n`+
       `Réservation : ${formatBonDate(dateRes,heureRes)}\n`+
       `Prise en charge : ${pec?formatNow(pec):"—"}\n`+
       `Passager : ${passager}\n`+
@@ -271,99 +223,10 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
       (profile.adresse?`Adresse : ${profile.adresse}\n`:"")+
       `N° registre VTC : ${profile.numVTC||"—"}\n`+
       (profile.numIdent?`SIRET : ${profile.numIdent}\n`:"");
-  }
-
-  function genererPDF(){
-    const{jsPDF}=window.jspdf;
-    const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-    const W=210, pad=20;
-    let y=20;
-
-    // Fond header
-    doc.setFillColor(8,11,18);
-    doc.rect(0,0,W,40,"F");
-
-    // Titre
-    doc.setTextColor(79,128,255);
-    doc.setFontSize(20);doc.setFont("helvetica","bold");
-    doc.text("BON DE COMMANDE VTC",W/2,18,{align:"center"});
-    doc.setTextColor(107,120,153);
-    doc.setFontSize(9);doc.setFont("helvetica","normal");
-    doc.text("Conformément à l'arrêté du 6 août 2025",W/2,26,{align:"center"});
-    y=48;
-
-    // Ligne séparatrice
-    doc.setDrawColor(30,38,64);doc.setLineWidth(0.5);
-    doc.line(pad,y,W-pad,y);y+=10;
-
-    // Section Course
-    doc.setFillColor(15,19,32);
-    doc.roundedRect(pad,y,W-pad*2,8,2,2,"F");
-    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
-    doc.text("COURSE",pad+4,y+5.5);
-    y+=14;
-
-    const rows=[
-      ["Date et heure de réservation", formatBonDate(dateRes,heureRes)],
-      ["Heure de prise en charge", pec?formatNow(pec):"—"],
-      ["Nom du passager", passager],
-      ["Lieu de prise en charge", adresseD],
-      ["Destination", adresseA],
-    ];
-
-    rows.forEach(([k,v])=>{
-      doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
-      doc.text(k,pad,y);
-      doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
-      const lines=doc.splitTextToSize(v||"—",90);
-      doc.text(lines,W/2,y);
-      y+=lines.length>1?lines.length*6:8;
-    });
-
-    y+=4;
-    doc.setDrawColor(230,230,230);doc.line(pad,y,W-pad,y);y+=10;
-
-    // Section Exploitant
-    doc.setFillColor(15,19,32);
-    doc.roundedRect(pad,y,W-pad*2,8,2,2,"F");
-    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","bold");
-    doc.text("EXPLOITANT",pad+4,y+5.5);
-    y+=14;
-
-    const rows2=[
-      ["Nom du chauffeur", profile.chauffeur||profile.nom||"—"],
-      profile.societe&&["Société", profile.societe],
-      profile.adresse&&["Adresse", profile.adresse],
-      ["N° registre VTC", profile.numVTC||"—"],
-      profile.numIdent&&["SIRET", profile.numIdent],
-    ].filter(Boolean);
-
-    rows2.forEach(([k,v])=>{
-      doc.setTextColor(102,102,102);doc.setFontSize(9);doc.setFont("helvetica","normal");
-      doc.text(k,pad,y);
-      doc.setTextColor(17,17,17);doc.setFont("helvetica","bold");
-      const lines=doc.splitTextToSize(v||"—",90);
-      doc.text(lines,W/2,y);
-      y+=lines.length>1?lines.length*6:8;
-    });
-
-    // Footer
-    doc.setFillColor(8,11,18);
-    doc.rect(0,277,W,20,"F");
-    doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","normal");
-    doc.text("VTC Order — Généré le "+formatNow(new Date()),W/2,287,{align:"center"});
-
-    // Téléchargement
-    const filename=`bon-vtc-${pad(new Date().getDate())}${pad(new Date().getMonth()+1)}${new Date().getFullYear()}.pdf`;
-    doc.save(filename);
-  }
-
-  async function partager(){
-    const txt=getBonTexte();
     try{await navigator.share({title:"Bon de commande VTC",text:txt})}
     catch{
-      try{await navigator.clipboard.writeText(txt);alert("✅ Bon copié ! Colle-le où tu veux.");}
-      catch{alert("Partage non disponible. Fais une capture d'écran du bon.");}
+      try{await navigator.clipboard.writeText(txt);alert("✅ Bon copié !");}
+      catch{alert("Partage non disponible.");}
     }
   }
 
@@ -373,7 +236,6 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
     <>
       <style>{CSS}</style>
       <div className="app">
-
         <header>
           <div className="brand">
             <div className="brand-icon">🚗</div>
@@ -414,7 +276,7 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
                 <div className="tbox"><label>MM</label><input id="mm" inputMode="numeric" maxLength={2} value={mm} onChange={e=>onMm(e.target.value)} placeholder="30"/></div>
               </div>
               <div className="drow"><label>Date</label><input type="date" value={dateRes} onChange={e=>setDateRes(e.target.value)}/></div>
-              <div className="hint">⏱ Heure à laquelle tu as quitté ta base. L'heure de prise en charge est capturée automatiquement à la génération.</div>
+              <div className="hint">⏱ Heure à laquelle tu as quitté ta base. L'heure de prise en charge est capturée automatiquement.</div>
             </div>
             <div className="card">
               <div className="ct">🧑 Passager & trajet</div>
@@ -433,7 +295,7 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
               <button className="b-back" onClick={()=>setScreen("form")}>✏️ Modifier</button>
               <button className="b-new" onClick={openForm}>➕ Nouveau</button>
               <button className="b-share" onClick={partager}>📤 Partager</button>
-              <button className="b-share" style={{background:"linear-gradient(135deg,#ff6b35,#ffc843)",color:"#080b12"}} onClick={genererPDF}>📄 PDF</button>
+              <button className="b-pdf" onClick={genererPDF}>📄 PDF</button>
             </div>
             <div className="bon-wrap">
               <div className="bon-paper">
@@ -464,7 +326,7 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
             <div className="ps">Sauvegardé sur ton appareil. À remplir une seule fois.</div>
             <div className="card">
               <div className="ct">👤 Identité</div>
-              <div className="field"><label>Nom complet (émetteur)</label><input type="text" value={profile.nom} onChange={e=>setProfile({...profile,nom:e.target.value})} placeholder="Ton nom et prénom"/></div>
+              <div className="field"><label>Nom complet</label><input type="text" value={profile.nom} onChange={e=>setProfile({...profile,nom:e.target.value})} placeholder="Ton nom et prénom"/></div>
               <div className="field"><label>Nom du chauffeur (si différent)</label><input type="text" value={profile.chauffeur} onChange={e=>setProfile({...profile,chauffeur:e.target.value})} placeholder="Facultatif"/></div>
               <div className="field"><label>Société (optionnel)</label><input type="text" value={profile.societe} onChange={e=>setProfile({...profile,societe:e.target.value})} placeholder="Auto-entrepreneur, SAS…"/></div>
               <div className="field"><label>Adresse</label><textarea value={profile.adresse} onChange={e=>setProfile({...profile,adresse:e.target.value})} placeholder="Ton adresse complète"/></div>
@@ -480,7 +342,6 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
             </button>
           </div>
         )}
-
       </div>
     </>
   );
@@ -489,9 +350,9 @@ header{background:var(--s1);border-bottom:1px solid var(--bd);padding:14px 18px;
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
 <script>
-  if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("sw.js").catch(()=>{});
-  }
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
 </script>
 </body>
 </html>
