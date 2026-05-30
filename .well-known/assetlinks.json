@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "dev.workers.youssouf_93700.vtc_order.twa",
+    "sha256_cert_fingerprints": ["02:EA:0B:B7:6E:6E:FB:80:41:C3:9B:0A:8A:1D:79:F6:E1:4D:68:5B:C4:B4:23:41:72:59:40:98:7C:4A:F3:14"]
+  }
+}]
