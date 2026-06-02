@@ -154,7 +154,7 @@ function App(){
       const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
       const W=210,mg=20;
       let y=20;
-      doc.setFillColor(8,11,18);
+      doc.setFillColor(255,255,255);
       doc.rect(0,0,W,40,"F");
       doc.setTextColor(79,128,255);
       doc.setFontSize(20);doc.setFont("helvetica","bold");
@@ -202,7 +202,7 @@ function App(){
         doc.text(lines,W/2,y);
         y+=lines.length>1?lines.length*6:8;
       });
-      doc.setFillColor(8,11,18);
+      doc.setFillColor(255,255,255);
       doc.rect(0,277,W,20,"F");
       doc.setTextColor(107,120,153);doc.setFontSize(8);doc.setFont("helvetica","normal");
       doc.text("VTC Order — Genere le "+formatNow(new Date()),W/2,287,{align:"center"});
